@@ -1,8 +1,11 @@
 #!/usr/bin/perl
 #
-# PadBuster v0.3.3 - Automated script for performing Padding Oracle attacks
+# PadBuster v0.3.4 - Automated script for performing Padding Oracle attacks
 # Brian Holyfield - Gotham Digital Science (labs@gdssecurity.com)
 #
+# - Ignore certificate verification
+# - Now works with burp proxy
+# 
 # Credits to J.Rizzo and T.Duong for providing proof of concept web exploit
 # techniques and S.Vaudenay for initial discovery of the attack. Credits also
 # to James M. Martin (research@esptl.com) for sharing proof of concept exploit
@@ -640,6 +643,7 @@ sub makeRequest {
   
   $lwp = LWP::UserAgent->new(env_proxy => 1,
                             keep_alive => 1,
+                            ssl_opts => { SSL_verify_mode => 0, verify_hostname => 0 },
                             timeout => 30,
 			    requests_redirectable => [],
                             );
@@ -663,10 +667,9 @@ sub makeRequest {
 		$proxyUrl .= $proxyAuth."@";
  	}
  	$proxyUrl .= $proxy;
- 	$lwp->proxy(['http'], "http://".$proxy);
+ 	$lwp->proxy(['http', 'https'], "http://".$proxy);
 	$ENV{HTTPS_PROXY} = "http://".$proxy;
-  } 	
-
+  }
 
   if ($auth) {
    my ($httpuser, $httppass) = split(/:/,$auth);
